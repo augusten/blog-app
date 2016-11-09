@@ -1,0 +1,19 @@
+doctype html
+html
+	head
+		title Register!
+	body
+		form(action='register' method='post')
+			label Name
+			input(name='name' placeholder='Your name' required)
+			br
+			label Email
+			input(name='email' placeholder='Your email' required)
+			br
+			label Password
+			input(name='password' placeholder='Your password' required)
+			br
+			label Repeat password
+			input(name='repeatpassword' placeholder='Repeat password' required)
+			a(href='/')
+				input#register(type='submit' value='Register')

@@ -1,0 +1,29 @@
+doctype html
+html
+	head
+		title osom blog
+		link(rel='stylesheet' type='text/css' href='/css/materialize.min.css')
+		link(href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css')
+	body
+		.row
+			.col.l4
+				if user
+					h1 Hello #{user.name}
+					a(href='/create')
+						input#logout(type='submit' value='Create a post')
+					a(href='/logout')
+						input#logout(type='submit' value='Log the hell out')
+				else
+					h1 Please log in
+					form( action='login' method='post' )
+						label Email
+						input( name='email' required ) 
+						input#login(type='submit' value='login')
+					div Don't have an accout yet? It's super easy to 
+						a(href='/register') register
+			.col.l8
+				h2 #{thePost.title}
+				p #{thePost.content}
+	script(src='/js/jquery-3.1.1.min.js')
+	script(src='/js/materialize.min.js')
+	script(src='/js/main.js')
