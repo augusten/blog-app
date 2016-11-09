@@ -17,11 +17,17 @@ html
 						input#login(type='submit' value='Log in')
 			.col.l8
 				if user
-					form.col.s12
+					form.col.s12(action='/create' method='post')
 						div.row
-							div.input-field.col.s12
-								textarea(id="textarea1" class="materialize-textarea" rows="5")
-								label(for="textarea1") Write your blog post
+							div.col.l12
+								div.row
+									div.input-field.col
+										input(id="title" type="text" name="title")
+										label(for="title") Title
+								div.row
+									div.input-field.col.l12
+										textarea(id="textarea1" class="materialize-textarea" name="textarea")
+										label(for="textarea1") Write your blog post
 								input#create(type='submit' value='create post')
 				else
 					div Only users can create blog posts!

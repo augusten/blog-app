@@ -33,7 +33,7 @@ let User = db.define( 'user', {
 	password: Sequelize.STRING
 })
 
-let blogPost = db.define( 'post', {
+let Post = db.define( 'post', {
 	title: Sequelize.STRING,
 	content: Sequelize.TEXT
 })
@@ -43,20 +43,35 @@ let Comment = db.define( 'comments', {
 })
 
 // Define relations
-User.hasMany( blogPost )
+User.hasMany( Post )
 User.hasMany( Comment )
-blogPost.hasMany( Comment )
-blogPost.belongsTo( User )
+Post.hasMany( Comment )
+Post.belongsTo( User )
 Comment.belongsTo( User )
-Comment.belongsTo( blogPost )
+Comment.belongsTo( Post )
 
 // set up the express routes
-app.get( '/ping', (req, res) => {
-	res.send( 'pong ')
+
+app.post( '/create', bodyParser.urlencoded({extended: true}), ( req, res ) => {
+	var user = req.session.user
+	console.log(req.body.title)
+	// find the user
+	User.findOne( {
+		where: {email: user.email}
+		})
+	.then( user => {
+		// add post to the database acccording to the blogPost model
+		// and it belongs to the logged in user
+		user.createPost({
+			title: req.body.title,
+			content: req.body.textarea
+		})
+
+	})
 })
 
 app.get( '/', (req, res) => {
-	let firstProm = blogPost.findAll( {
+	let firstProm = Post.findAll( {
 		attributes: [ 'id', 'title', 'content']
 	})
 	let secondProm = firstProm.then( data => {
@@ -80,7 +95,7 @@ app.get( '/login', (req, res) => {
 	if (user == undefined) {
 		res.redirect( '/?message=' + encodeURIComponent('log in'))
 	} else {
-		let firstProm = blogPost.findAll( {
+		let firstProm = Post.findAll( {
 			attributes: ['id', 'title', 'content']
 		})
 		let secondProm = firstProm.then( data => {
@@ -159,6 +174,7 @@ app.post('/register', bodyParser.urlencoded({extended: true}), (req, res) => {
 })
 
 app.get( '/create', (req, res) => {
+	// show the page to create the post
 	var user = req.session.user
 	res.render( 'createpost', {
 		user: user,
@@ -166,12 +182,30 @@ app.get( '/create', (req, res) => {
 	})
 })
 
+// app.post( '/create', bodyParser.urlencoded({extended: true}), ( req, res ) => {
+// 	var user = req.session.user
+// 	console.log(req.body.title)
+// 	// find the user
+// 	User.findOne( {
+// 		where: {email: user.email}
+// 		})
+// 	.then( user => {
+// 		// add post to the database acccording to the blogPost model
+// 		// and it belongs to the logged in user
+// 		user.createblogPost({
+// 			title: req.body.title,
+// 			content: req.body.textarea
+// 		})
+
+// 	})
+// })
+
 app.get( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 	// show post selected by the user on separate page
 	var user = req.session.user
 	var queryObject = req.query
 	console.log(queryObject.title)
-	blogPost.findOne( {
+	Post.findOne( {
 		// find the post which has been clicked on
 		where: { title: queryObject.title},
 		attributes: [ 'id', 'title', 'content']
@@ -186,33 +220,33 @@ app.get( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 })
 
 // sync the database
-db.sync( {force: true} ).then((  ) => { // ({force: true})
-	console.log( 'synced yay' )
-	User.create( {
-		name: 'Auguste', 
-		email: 'hello@it.is',
-		password: 'trial'
-	})
-	User.create( {
-		name: 'Guga', 
-		email: 'bye@it.is',
-		password: 'no'
-	})
-	blogPost.create( {
-		title: "Example title",
-		content: "Example text"
-	})
-	blogPost.create( {
-		title: "Example 2",
-		content: "Example text 2"
-	})
-	Comment.create( {
-		comText: "Some comment text"
-	})
-})
+// db.sync( {force: true} ).then((  ) => { // ({force: true})
+// 	console.log( 'synced yay' )
+// 	User.create( {
+// 		name: 'Auguste', 
+// 		email: 'hello@it.is',
+// 		password: 'trial'
+// 	})
+// 	User.create( {
+// 		name: 'Guga', 
+// 		email: 'bye@it.is',
+// 		password: 'no'
+// 	})
+// 	blogPost.create( {
+// 		title: "Example title",
+// 		content: "Example text"
+// 	})
+// 	blogPost.create( {
+// 		title: "Example 2",
+// 		content: "Example text 2"
+// 	})
+// 	Comment.create( {
+// 		comText: "Some comment text"
+// 	})
+// })
 
 // use this when app finished
-// db.sync()
+db.sync()
 
 // set up the server connection
 app.listen( 8000 )
