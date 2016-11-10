@@ -22,8 +22,17 @@ html
 					div Don't have an accout yet? It's super easy to 
 						a(href='/register') register
 			.col.l8
-				h2 #{thePost.title}
+				h2(id='heading') #{thePost.title}
 				p #{thePost.content}
+				br
+				form.col.s12(action='/showpost' method='post')
+					div.row
+						div.col.l12
+							div.row
+								div.input-field.col
+									textarea(id="textarea1" class="materialize-textarea" name="comment")
+									label(for="title") Comment
+								input(type='submit' id="comment-submit" value='create comment')
 	script(src='/js/jquery-3.1.1.min.js')
 	script(src='/js/materialize.min.js')
 	script(src='/js/main.js')

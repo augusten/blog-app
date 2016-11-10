@@ -52,27 +52,10 @@ Comment.belongsTo( Post )
 
 // set up the express routes
 
-app.post( '/create', bodyParser.urlencoded({extended: true}), ( req, res ) => {
-	var user = req.session.user
-	console.log(req.body.title)
-	// find the user
-	User.findOne( {
-		where: {email: user.email}
-		})
-	.then( user => {
-		// add post to the database acccording to the blogPost model
-		// and it belongs to the logged in user
-		user.createPost({
-			title: req.body.title,
-			content: req.body.textarea
-		})
-
-	})
-})
-
 app.get( '/', (req, res) => {
 	let firstProm = Post.findAll( {
 		attributes: [ 'id', 'title', 'content']
+		// include: [User]
 	})
 	let secondProm = firstProm.then( data => {
 		let ddata = []
@@ -182,29 +165,64 @@ app.get( '/create', (req, res) => {
 	})
 })
 
-// app.post( '/create', bodyParser.urlencoded({extended: true}), ( req, res ) => {
-// 	var user = req.session.user
-// 	console.log(req.body.title)
-// 	// find the user
-// 	User.findOne( {
-// 		where: {email: user.email}
-// 		})
-// 	.then( user => {
-// 		// add post to the database acccording to the blogPost model
-// 		// and it belongs to the logged in user
-// 		user.createblogPost({
-// 			title: req.body.title,
-// 			content: req.body.textarea
-// 		})
+app.post( '/create', bodyParser.urlencoded({extended: true}), ( req, res ) => {
+	var user = req.session.user
+	// find the user
+	User.findOne( {
+		where: {email: user.email}
+		})
+	.then( user => {
+		// add post to the database acccording to the blogPost model
+		// and it belongs to the logged in user
+		user.createPost({
+			title: req.body.title,
+			content: req.body.textarea
+		})
+	})
+	.then( () => {
+		res.redirect ( '/' )
+	})
+})
 
-// 	})
-// })
+app.post( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
+	// use this to write a comment for a blog post
+	var user = req.session.user
+	var queryObject = req.query
+	var id = document.getElementById('para')
+	console.log(req.body)
+	// Post.findOne( { 
+	// 	where: { title: queryObject.title },
+	// }).then( post => {
+	// 	// post.createComment({
+	// 	// 	comText: req.body.comment
+	// 	// })
+	// 	// console.log(post)
+	// })
+})
+
+app.get( '/showcomments', (req, res) => {
+	var user = req.session.user
+	var queryObject = req.query
+	console.log("hello, it's me")
+	Post.findOne({
+		where: { title: queryObject.title},
+		attributes: [ 'title' ],
+		include: [
+			{model: Comment}
+			]
+	}).then( post => {
+		// res.send
+		for (var i = post.dataValues.comments.length - 1; i >= 0; i--) {
+			console.log(post.dataValues.comments[i].dataValues.comText)
+		}
+		// console.log(post.dataValues.title)
+	})
+})
 
 app.get( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 	// show post selected by the user on separate page
 	var user = req.session.user
 	var queryObject = req.query
-	console.log(queryObject.title)
 	Post.findOne( {
 		// find the post which has been clicked on
 		where: { title: queryObject.title},
@@ -212,41 +230,51 @@ app.get( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 	}).then( post => {
 			res.render( 'post', {
 				user: user,
-				message: req.session.message,
+				// message: req.session.message,
 				thePost: post
 			} )
 		}
 	)
 })
-
 // sync the database
-// db.sync( {force: true} ).then((  ) => { // ({force: true})
-// 	console.log( 'synced yay' )
-// 	User.create( {
-// 		name: 'Auguste', 
-// 		email: 'hello@it.is',
-// 		password: 'trial'
-// 	})
-// 	User.create( {
-// 		name: 'Guga', 
-// 		email: 'bye@it.is',
-// 		password: 'no'
-// 	})
-// 	blogPost.create( {
-// 		title: "Example title",
-// 		content: "Example text"
-// 	})
-// 	blogPost.create( {
-// 		title: "Example 2",
-// 		content: "Example text 2"
-// 	})
-// 	Comment.create( {
-// 		comText: "Some comment text"
-// 	})
-// })
+db.sync( {force: true} ).then((  ) => { // ({force: true})
+	console.log( 'synced yay' )
+	User.create( {
+		name: 'Auguste', 
+		email: 'hello@it.is',
+		password: 'trial'
+	})
+	User.create( {
+		name: 'Guga', 
+		email: 'bye@it.is',
+		password: 'no'
+	})
+	Post.create( {
+		title: "Example title",
+		content: "Example text"
+	}).then( post => {
+		post.createComment({
+			comText: "Commentt"
+		})
+		post.createComment({
+			comText: "Another One"
+		})
+	})
+	Post.create( {
+		title: "Example 2",
+		content: "Example text 2"
+	}).then( post => {
+		post.createComment({
+			comText: "Some comment text"
+		})
+	})
+	// Comment.create( {
+	// 	comText: "Some comment text"
+	// })
+})
 
 // use this when app finished
-db.sync()
+// db.sync()
 
 // set up the server connection
 app.listen( 8000 )
