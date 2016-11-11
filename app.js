@@ -204,25 +204,31 @@ app.get( '/showcomments', (req, res) => {
 	var user = req.session.user
 	var queryObject = req.query
 	console.log("hello, it's me")
-	Post.findOne({
+	// with first promise we find all coments of the post and put them in an array
+	let firstProm = Post.findOne({
 		where: { title: queryObject.title},
 		attributes: [ 'title' ],
 		include: [
 			{model: Comment}
 			]
 	}).then( post => {
-		// res.send
+		let commentArray = []
 		for (var i = post.dataValues.comments.length - 1; i >= 0; i--) {
-			console.log(post.dataValues.comments[i].dataValues.comText)
+			commentArray.push(post.dataValues.comments[i].dataValues.comText)
 		}
-		// console.log(post.dataValues.title)
+		return commentArray
 	})
+	// with second promise send the array back to the front-end
+	let secondProm = firstProm.then( comments => {
+		res.send( comments )
+	} )
 })
 
 app.get( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 	// show post selected by the user on separate page
 	var user = req.session.user
 	var queryObject = req.query
+	console.log(queryObject)
 	Post.findOne( {
 		// find the post which has been clicked on
 		where: { title: queryObject.title},

@@ -25,9 +25,12 @@ html
 				h2(id='heading') #{thePost.title}
 				p #{thePost.content}
 				br
-				form.col.s12(action='/showpost' method='post')
+				form.col.s12
 					div.row
 						div.col.l12
+							div.row
+								div#comment-list
+									//- p
 							div.row
 								div.input-field.col
 									textarea(id="textarea1" class="materialize-textarea" name="comment")
