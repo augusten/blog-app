@@ -10,9 +10,11 @@ html
 				if user
 					h1 Hello #{user.name}
 					a(href='/create')
-						input#logout(type='submit' value='Create a post')
+						input(type='submit' value='Create a post')
 					a(href='/logout')
 						input#logout(type='submit' value='Log the hell out')
+					a#filter
+						input(type='submit' value='Filter posts')
 				else
 					h1 Please log in
 					form( action='login' method='post' )

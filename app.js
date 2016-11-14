@@ -53,9 +53,9 @@ Comment.belongsTo( Post )
 // set up the express routes
 
 app.get( '/', (req, res) => {
+	var user = req.session.user
 	let firstProm = Post.findAll( {
 		attributes: [ 'id', 'title', 'content']
-		// include: [User]
 	})
 	let secondProm = firstProm.then( data => {
 		let ddata = []
@@ -75,27 +75,28 @@ app.get( '/', (req, res) => {
 
 app.get( '/login', (req, res) => {
 	var user = req.session.user
-	if (user == undefined) {
-		res.redirect( '/?message=' + encodeURIComponent('log in'))
-	} else {
-		let firstProm = Post.findAll( {
-			attributes: ['id', 'title', 'content']
-		})
-		let secondProm = firstProm.then( data => {
-			let ddata = []
-			for (var i = data.length - 1; i >= 0; i--) {
-				ddata.push( data[i].dataValues )
-			}
-			return ddata
-		})
-		let thirdProm = secondProm.then( ( data ) => {
-			res.render( 'index', {
-				message: req.session.message,
-				user: user,
-				posts: data
-			} )
-		})
-	}
+	res.redirect('/?hello')
+	// if (user == undefined) {
+	// 	res.redirect( '/?message=' + encodeURIComponent('log in'))
+	// } else {
+	// 	let firstProm = Post.findAll( {
+	// 		attributes: ['id', 'title', 'content']
+	// 	})
+	// 	let secondProm = firstProm.then( data => {
+	// 		let ddata = []
+	// 		for (var i = data.length - 1; i >= 0; i--) {
+	// 			ddata.push( data[i].dataValues )
+	// 		}
+	// 		return ddata
+	// 	})
+	// 	let thirdProm = secondProm.then( ( data ) => {
+	// 		res.render( 'index', {
+	// 			message: req.session.message,
+	// 			user: user,
+	// 			posts: data
+	// 		} )
+	// 	})
+	// }
 })
 
 app.post( '/login', bodyParser.urlencoded({extended: true}), (req, res) => {
@@ -184,26 +185,9 @@ app.post( '/create', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 	})
 })
 
-app.post( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
-	// use this to write a comment for a blog post
-	var user = req.session.user
-	var queryObject = req.query
-	var id = document.getElementById('para')
-	console.log(req.body)
-	// Post.findOne( { 
-	// 	where: { title: queryObject.title },
-	// }).then( post => {
-	// 	// post.createComment({
-	// 	// 	comText: req.body.comment
-	// 	// })
-	// 	// console.log(post)
-	// })
-})
-
 app.get( '/showcomments', (req, res) => {
 	var user = req.session.user
 	var queryObject = req.query
-	console.log("hello, it's me")
 	// with first promise we find all coments of the post and put them in an array
 	let firstProm = Post.findOne({
 		where: { title: queryObject.title},
@@ -228,59 +212,98 @@ app.get( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 	// show post selected by the user on separate page
 	var user = req.session.user
 	var queryObject = req.query
-	console.log(queryObject)
 	Post.findOne( {
 		// find the post which has been clicked on
 		where: { title: queryObject.title},
-		attributes: [ 'id', 'title', 'content']
+		attributes: [ 'id', 'title', 'content', 'userId'], 
+		include: [User, Comment]
 	}).then( post => {
-			res.render( 'post', {
-				user: user,
-				// message: req.session.message,
-				thePost: post
-			} )
+		User.findOne({
+			where: {id: post.dataValues.userId }
+		}).then( author => {
+				// console.log(author)
+				res.render( 'post', {
+					user: user,
+					author: author.dataValues.name,
+					thePost: post
+				} )
+			})
 		}
 	)
 })
-// sync the database
-db.sync( {force: true} ).then((  ) => { // ({force: true})
-	console.log( 'synced yay' )
-	User.create( {
-		name: 'Auguste', 
-		email: 'hello@it.is',
-		password: 'trial'
-	})
-	User.create( {
-		name: 'Guga', 
-		email: 'bye@it.is',
-		password: 'no'
-	})
-	Post.create( {
-		title: "Example title",
-		content: "Example text"
-	}).then( post => {
-		post.createComment({
-			comText: "Commentt"
-		})
-		post.createComment({
-			comText: "Another One"
-		})
-	})
-	Post.create( {
-		title: "Example 2",
-		content: "Example text 2"
-	}).then( post => {
-		post.createComment({
-			comText: "Some comment text"
+
+app.post( '/addcomment', bodyParser.urlencoded({extended: true}), ( req, res ) => {
+	let user = req.session.user
+	// fetch the comment of the user
+	let comment = req.body.comment
+	// Find Post
+	// Create comment to the post by the user!
+	User.findOne ({
+		// first identify user posting comment
+		where: {name: user.name}
+	}).then ( user => {
+		Post.findOne ( {
+			// identify the post on which the comment is being posted on
+			where: {title: req.body.title},
+			attributes: [ 'id', 'title', 'content']
+		}).then( post => {
+			post.createComment({
+				// finally create the comment!
+				comText: req.body.comment
+			}).then( comment => {
+				// set the comment to belong to the user
+				comment.setUser( user )
+				res.send( {
+					user: user,
+					thePost: post,
+					comment: comment.dataValues.comText
+				} )
+			})
 		})
 	})
-	// Comment.create( {
-	// 	comText: "Some comment text"
-	// })
+	// res.send(req.body.comment)
 })
 
+// sync the database
+// db.sync( {force: true} ).then((  ) => { // ({force: true})
+// 	console.log( 'synced yay' )
+// 	var guga = {
+// 		name: 'Guga', 
+// 		email: 'bye@it.is',
+// 		password: 'no'
+// 	}
+// 	User.create( guga ).then ( user => {
+// 		user.createPost( {
+// 			title: "Example title",
+// 			content: "Example text"
+// 			}).then( post => {
+// 				post.createComment({
+// 					comText: "Commentt"
+// 				}).then( comment => {
+// 					comment.setUser( user )
+// 				})
+// 		})
+// 	})
+// 	User.create( {
+// 		name: 'Guga', 
+// 		email: 'e@it.is',
+// 		password: 'yes'
+// 	}).then ( user => {
+// 		user.createPost( {
+// 			title: "This is frustrating",
+// 			content: "Or it rarher can get frustrating yayy"
+// 			}).then( post => {
+// 				post.createComment({
+// 				comText: "Gimme some comments"
+// 				}).then( comment => {
+// 					comment.setUser( user )
+// 				})
+// 		})
+// 	})
+// })
+
 // use this when app finished
-// db.sync()
+db.sync()
 
 // set up the server connection
 app.listen( 8000 )
