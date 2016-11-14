@@ -11,15 +11,26 @@ html
 					h1 Hello #{user.name}
 					a(href='/create')
 						input(type='submit' value='Create a post')
+					br
 					a(href='/logout')
 						input#logout(type='submit' value='Log the hell out')
-					a#filter
-						input(type='submit' value='Filter posts')
+					br
+					if filter === "off"
+						a#filter(href='/filter')
+							input(type='submit' value='Show my posts')
+						br
+					else
+						a#filter(href='/')
+							input(type='submit' value='Show all posts')
+						br
+
 				else
 					h1 Please log in
 					form( action='login' method='post' )
 						label Email
-						input( name='email' required ) 
+							input( name='email' required )
+						label Password
+							input( name='password' type="password" required ) 
 						input#login(type='submit' value='login')
 					div Don't have an accout yet? It's super easy to 
 						a(href='/register') register
@@ -35,4 +46,4 @@ html
 					//- i += 1
 	script(src='/js/jquery-3.1.1.min.js')
 	script(src='/js/materialize.min.js')
-	//- script(src='/js/main.js')
+	script(src='/js/main.js')

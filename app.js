@@ -66,6 +66,31 @@ app.get( '/', (req, res) => {
 	})
 	let thirdProm = secondProm.then( ( data ) => {
 		res.render( 'index', {
+			filter: "off",
+			message: req.session.message,
+			user: req.session.user,
+			posts: data
+		} )
+	})
+})
+
+app.get( '/filter', (req, res) => {
+	var user = req.session.user
+	let firstProm = Post.findAll( {
+		// filter out the posts to show only users
+		where: {userId: user.id},
+		attributes: [ 'id', 'title', 'content']
+	})
+	let secondProm = firstProm.then( data => {
+		let ddata = []
+		for (var i = data.length - 1; i >= 0; i--) {
+			ddata.push( data[i].dataValues )
+		}
+		return ddata
+	})
+	let thirdProm = secondProm.then( ( data ) => {
+		res.render( 'index', {
+			filter: "on",
 			message: req.session.message,
 			user: req.session.user,
 			posts: data
@@ -100,13 +125,14 @@ app.get( '/login', (req, res) => {
 })
 
 app.post( '/login', bodyParser.urlencoded({extended: true}), (req, res) => {
-	if ( req.body.email.length === 0 ) {
+	if ( req.body.email.length === 0 || req.body.password.length === 0 ) {
 		res.redirect( '/?message=' + encodeURIComponent('WRONG'))
 		return
 	}
 	User.findOne( {
 		where: {
-			email: req.body.email
+			email: req.body.email,
+			password: req.body.password
 		}
 	}).then( user => {
 		if ( user != null ) {
