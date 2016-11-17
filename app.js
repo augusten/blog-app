@@ -2,7 +2,8 @@
 const Sequelize = require ('sequelize')
 const express = require ('express')
 const session = require ('express-session')
-var bodyParser = require('body-parser')
+const bodyParser = require('body-parser')
+const bcrypt = require ( 'bcrypt' )
 const app = express()
 
 // set up the views engine
@@ -131,17 +132,25 @@ app.post( '/login', bodyParser.urlencoded({extended: true}), (req, res) => {
 	}
 	User.findOne( {
 		where: {
-			email: req.body.email,
-			password: req.body.password
+			email: req.body.email
+			// password: req.body.password
 		}
 	}).then( user => {
 		if ( user != null ) {
-			// assign the session user
-			req.session.user = user
-			res.redirect( '/' )
+			//if user not empty compare hashed passwords
+			bcrypt.compare( req.body.password, user.dataValues.password, (err, result) => {
+				if (result == true) {
+					req.session.user = user
+					res.redirect( '/' )
+				} else {
+					res.redirect('/?message=' + encodeURIComponent("Invalid email or password."))
+				}
+			})
+		} else {
+			res.redirect('/?message=' + encodeURIComponent("Invalid email or password."))
 		}
 	}, error => {
-		res.redirect('/?message=' + encodeURIComponent("Invalid email or password."));
+		res.redirect('/?message=' + encodeURIComponent("Invalid email or password."))
 	})
 })
 
@@ -159,6 +168,8 @@ app.get('/register', (req, res) => {
 })
 
 app.post('/register', bodyParser.urlencoded({extended: true}), (req, res) => {
+	let wordpass = ''
+	// console.log(req.body.password)
 	let userDets = {
 		name: req.body.name,
 		email: req.body.email,
@@ -173,11 +184,22 @@ app.post('/register', bodyParser.urlencoded({extended: true}), (req, res) => {
 				email: req.body.email
 			}
 		} ).then( num => {
+			console.log(wordpass)
 			if ( num > 0 ) {
 				res.redirect('/register?message=' + encodeURIComponent("email already exists"))
-			} else {
-				User.create( userDets )
-				res.redirect( '/' )
+			} else {				
+				bcrypt.hash(req.body.password, 8, ( err, hash ) => {
+					if (err) throw err
+					User.create({
+						name: req.body.name,
+						email: req.body.email,
+						password: hash
+					})
+					console.log( hash )
+					res.redirect( '/' )
+				})
+				// User.create( userDets )
+				// res.redirect( '/' )
 			}
 		})
 	}
