@@ -16,6 +16,7 @@
     "html-parser": "^0.10.0",
     "pg": "^6.1.0",
     "pug": "^2.0.0-beta6",
-    "sequelize": "^3.24.8"
+    "sequelize": "^3.24.8",
+    "summernote": "^0.8.2"
   }
 }
