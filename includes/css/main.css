@@ -1,0 +1,57 @@
+html {
+	font-family: Raleway;
+}
+
+.nav {
+   /* border:1px solid #ccc;
+    border-width:1px 0;*/
+    list-style:none;
+    margin:0;
+    padding-top:100px;
+    padding-bottom: 30px;
+    text-align:center;
+    background-color: transparent;
+    text-align: center;
+}
+.nav li {
+    display:inline;
+}
+.nav a {
+    display:inline-block;
+    color: black;
+    padding:10px;
+}
+
+.nav a:hover {
+	background-color: #DCDCDC;
+}
+
+#greeting {
+	padding: 30px;
+}
+
+#blogpost {
+	height: 20%;
+	width: 100%;
+}
+
+p {
+	text-align: justify;
+}
+
+h5 a {
+	padding-left: 20px;
+	color: black;
+}
+
+#header {
+	min-height: 300px;
+	background-color: grey;
+	background-image: url('/images/background.jpg');
+	background-position: bottom;
+	background-size: cover;
+}
+
+.center-btn {
+	text-align: center;
+}

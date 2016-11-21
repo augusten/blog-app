@@ -2,18 +2,30 @@ doctype html
 html
 	head
 		title Register!
+		link(rel='stylesheet' type='text/css' href='/css/materialize.min.css')
+		link(rel='stylesheet' type='text/css' href='/css/main.css')
+		link(href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css')
+		link(rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Raleway")
 	body
-		form(action='register' method='post')
-			label Name
-			input(name='name' type="text" placeholder='Your name' required)
-			br
-			label Email
-			input(name='email' type="email" placeholder='Your email' required)
-			br
-			label Password
-			input(name='password' type="password" placeholder='Your password' required)
-			br
-			label Repeat password
-			input(name='repeatpassword' type="password" placeholder='Repeat password' required)
-			a(href='/')
-				input#register(type='submit' value='Register')
+		ul.nav
+			li
+				a(href='/') HOME
+		.container
+			form(action='register' method='post')
+				label Name
+				input(name='name' type="text" placeholder='Your name' required)
+				br
+				label Email
+				input(name='email' type="email" placeholder='Your email' required)
+				br
+				label Password
+				input(name='password' type="password" placeholder='Your password' required)
+				br
+				label Repeat password
+				input(name='repeatpassword' type="password" placeholder='Repeat password' required)
+				div(class="center-btn")
+					a(href='/')
+						input.btn-flat#register(type='submit' value='Register')
+	script(src='/js/jquery-3.1.1.min.js')
+	script(src='/js/materialize.min.js')
+	script(src='/js/main.js')

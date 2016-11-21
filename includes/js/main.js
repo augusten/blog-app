@@ -6,7 +6,9 @@ $(document).ready ( function() {
 		data: { title: document.getElementById('heading').innerHTML },
 		success: function ( data ) {
 			for (var i = data.length; i > 0; i--) {
-				$( "<p>" + data[i-1] + "</p>" ).insertAfter( '#comment-list' )
+				console.log(data[i-1])
+				// need to upgrade to show user name, not number
+				$( "<p>" + data[i-1].comText + "</p>" + "<p><i> - Comment by user #" + data[i-1].userId + "</p></i>" ).insertAfter( '#comment-list' )
 			}
 		}
 	})
@@ -20,7 +22,7 @@ $(document).ready ( function() {
 				title: document.getElementById('heading').innerHTML 
 			},
 			success: function ( data ) {
-				$( "<p>" + data.comment + "</p>").insertAfter( '#comment-list' )
+				$( "<p>" + data.comment + "</p>" + "<p><i> - Comment by " + data.user.name + "</p></i>" ).insertAfter( '#comment-list' )
 			}
 		})
 	})

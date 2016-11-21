@@ -3,47 +3,57 @@ html
 	head
 		title osom blog
 		link(rel='stylesheet' type='text/css' href='/css/materialize.min.css')
+		link(rel='stylesheet' type='text/css' href='/css/main.css')
 		link(href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css')
+		link(rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Raleway")
 	body
-		.row
-			.col.l4
-				if user
-					h1 Hello #{user.name}
-					a(href='/create')
-						input(type='submit' value='Create a post')
-					br
-					a(href='/logout')
-						input#logout(type='submit' value='Log the hell out')
-					br
-					if filter === "off"
-						a#filter(href='/filter')
-							input(type='submit' value='Show my posts')
-						br
-					else
-						a#filter(href='/')
-							input(type='submit' value='Show all posts')
-						br
-
+		if user
+			ul.nav
+				li
+					a(href='/create') CREATE A POST
+				if filter === "off"
+					li
+						a#filter(href='/filter') SHOW MY POSTS
 				else
-					h1 Please log in
-					form( action='login' method='post' )
-						label Email
-							input( name='email' required )
-						label Password
-							input( name='password' type="password" required ) 
-						input#login(type='submit' value='login')
-					div Don't have an accout yet? It's super easy to 
-						a(href='/register') register
-			.col.l8
-				//- let i = 0
-				each item in posts
-					//- a(href='#')
-					//- p.bpost(value=item.title) #{item.title}
-					a(href="/showpost?title=" + item.title) #{item.title}
-					p #{item.content}
-					.divider
-					br
-					//- i += 1
+					li
+						a#filter(href='/') SHOW ALL POSTS
+				li
+					a(href='/logout') LOG OUT
+			div#header.valign-wrapper
+				div.row.valign
+					div.col.l12
+						h1.center.white-text  Welcome, #{user.name}!
+		else
+			ul.nav
+				li
+					a(href='/register') REGISTER
+				li
+					a(href='/') POSTS
+			div#header.valign-wrapper
+				div.row
+					div.col.l7
+						h1.valign.center.white-text  Log in, anonymous
+					div.col.l4
+						//- LOG in form
+						form( action='login' method='post' )
+							label Email
+								input( name='email' required )
+							label Password
+								input( name='password' type="password" required )
+							.col.l6
+								input.btn-flat.center-align.white-text#login(type='submit' value='Log me in')
+							.col.l6
+								div.white-text.bottom Don't have an accout yet? It's super easy to 
+									a(href='/register') register
+		//- Show all posts
+
+		each item in posts
+			.row
+				.col.s6.offset-s3
+					div#blogpost
+						h5
+							a(href="/showpost?title=" + item.title) #{item.title}
+						div #{item.content}
 	script(src='/js/jquery-3.1.1.min.js')
 	script(src='/js/materialize.min.js')
 	script(src='/js/main.js')

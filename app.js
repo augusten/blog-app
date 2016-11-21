@@ -4,6 +4,7 @@ const express = require ('express')
 const session = require ('express-session')
 const bodyParser = require('body-parser')
 const bcrypt = require ( 'bcrypt' )
+const htmlParser = require ( 'html-parser' )
 const app = express()
 
 // set up the views engine
@@ -28,7 +29,7 @@ let db = new Sequelize( 'blog_app', 'augustenausedaite', null, {
 
 // Define the models of the database
 let User = db.define( 'user', {
-	name: Sequelize.STRING,
+	name: {type: Sequelize.STRING, unique: true},
 	// make email unique!
 	email: {type: Sequelize.STRING, unique: true},
 	password: Sequelize.STRING
@@ -102,27 +103,6 @@ app.get( '/filter', (req, res) => {
 app.get( '/login', (req, res) => {
 	var user = req.session.user
 	res.redirect('/?hello')
-	// if (user == undefined) {
-	// 	res.redirect( '/?message=' + encodeURIComponent('log in'))
-	// } else {
-	// 	let firstProm = Post.findAll( {
-	// 		attributes: ['id', 'title', 'content']
-	// 	})
-	// 	let secondProm = firstProm.then( data => {
-	// 		let ddata = []
-	// 		for (var i = data.length - 1; i >= 0; i--) {
-	// 			ddata.push( data[i].dataValues )
-	// 		}
-	// 		return ddata
-	// 	})
-	// 	let thirdProm = secondProm.then( ( data ) => {
-	// 		res.render( 'index', {
-	// 			message: req.session.message,
-	// 			user: user,
-	// 			posts: data
-	// 		} )
-	// 	})
-	// }
 })
 
 app.post( '/login', bodyParser.urlencoded({extended: true}), (req, res) => {
@@ -168,8 +148,7 @@ app.get('/register', (req, res) => {
 })
 
 app.post('/register', bodyParser.urlencoded({extended: true}), (req, res) => {
-	let wordpass = ''
-	// console.log(req.body.password)
+	// post request to register new user
 	let userDets = {
 		name: req.body.name,
 		email: req.body.email,
@@ -177,16 +156,18 @@ app.post('/register', bodyParser.urlencoded({extended: true}), (req, res) => {
 	}
 	if ( req.body.password != req.body.repeatpassword ) {
 		res.redirect('/register?message=' + encodeURIComponent("passwords are different"))
+	} else if (req.body.password.length < 8) {
+		res.redirect('/register?message=' + encodeURIComponent("password too short"))
 	} else { 
-	// see if the email has already been used
+	// see if the email or username has already been used
 		User.count ( {
-			where: {
-				email: req.body.email
-			}
+			where: Sequelize.or(
+				{email: req.body.email},
+				{ name: req.body.name }
+				)
 		} ).then( num => {
-			console.log(wordpass)
 			if ( num > 0 ) {
-				res.redirect('/register?message=' + encodeURIComponent("email already exists"))
+				res.redirect('/register?message=' + encodeURIComponent("username or email already exists"))
 			} else {				
 				bcrypt.hash(req.body.password, 8, ( err, hash ) => {
 					if (err) throw err
@@ -195,11 +176,8 @@ app.post('/register', bodyParser.urlencoded({extended: true}), (req, res) => {
 						email: req.body.email,
 						password: hash
 					})
-					console.log( hash )
 					res.redirect( '/' )
 				})
-				// User.create( userDets )
-				// res.redirect( '/' )
 			}
 		})
 	}
@@ -246,7 +224,8 @@ app.get( '/showcomments', (req, res) => {
 	}).then( post => {
 		let commentArray = []
 		for (var i = post.dataValues.comments.length - 1; i >= 0; i--) {
-			commentArray.push(post.dataValues.comments[i].dataValues.comText)
+			commentArray.push(post.dataValues.comments[i].dataValues)
+			// console.log(post.dataValues.comments[i].dataValues.comText)
 		}
 		return commentArray
 	})
@@ -269,7 +248,6 @@ app.get( '/showpost', bodyParser.urlencoded({extended: true}), ( req, res ) => {
 		User.findOne({
 			where: {id: post.dataValues.userId }
 		}).then( author => {
-				// console.log(author)
 				res.render( 'post', {
 					user: user,
 					author: author.dataValues.name,
@@ -311,44 +289,6 @@ app.post( '/addcomment', bodyParser.urlencoded({extended: true}), ( req, res ) =
 	})
 	// res.send(req.body.comment)
 })
-
-// sync the database
-// db.sync( {force: true} ).then((  ) => { // ({force: true})
-// 	console.log( 'synced yay' )
-// 	var guga = {
-// 		name: 'Guga', 
-// 		email: 'bye@it.is',
-// 		password: 'no'
-// 	}
-// 	User.create( guga ).then ( user => {
-// 		user.createPost( {
-// 			title: "Example title",
-// 			content: "Example text"
-// 			}).then( post => {
-// 				post.createComment({
-// 					comText: "Commentt"
-// 				}).then( comment => {
-// 					comment.setUser( user )
-// 				})
-// 		})
-// 	})
-// 	User.create( {
-// 		name: 'Guga', 
-// 		email: 'e@it.is',
-// 		password: 'yes'
-// 	}).then ( user => {
-// 		user.createPost( {
-// 			title: "This is frustrating",
-// 			content: "Or it rarher can get frustrating yayy"
-// 			}).then( post => {
-// 				post.createComment({
-// 				comText: "Gimme some comments"
-// 				}).then( comment => {
-// 					comment.setUser( user )
-// 				})
-// 		})
-// 	})
-// })
 
 // use this when app finished
 db.sync()
